@@ -2,16 +2,39 @@ import Pkg; Pkg.activate(".")
 Pkg.instantiate()
 
 using Distances, NearestNeighbors, CSV, StaticArrays
+using DataFrames, Colors, ColorSchemes
+using GeoMakie, CairoMakie
 
-using PlotlyJS, DataFrames, Colors, ColorSchemes
+##########################
+### parameters setting ###
 
-#Helper function that parses the location string from the registry in a length 2 SVector
+# number of groups
+ng = 10
+# minimum distance between groups
+dist = 50
+# filter minicubes
+filt = "full"
+
+# load minicube registry
+REGISTRY_PATH = "./mc_registry_v4.csv"
+if isfile(REGISTRY_PATH)
+    alldata = CSV.Rows(REGISTRY_PATH)
+else
+    println("No file $REGISTRY_PATH found. Run get_registry.jl to download a valid registry file.") 
+end
+
+#################
+### Functions ###
+
+# Helper function that parses the location string from the registry in a length 2 SVector
 function locstringtopoint(s)
     x,y = split(s,"_")
     @SVector [parse(Float64,x),parse(Float64,y)]
 end
 
 """
+    compute_clusters(locations::Vector{2},radius)
+
 Helper function that collects a list of `location`s into clusters while making sure that the distance between 
     locations from different clusters is always larger than `radius` using the Haversine distance. Here, `location`s is
     a vector of vectors providing the locations in (lon, lat) oder using the Haversine distance.
@@ -61,7 +84,7 @@ Function to split the geographical locations given in vector of vectors `locatio
 a member of each group has minimum distance of `radius` to the members of all other groups. Returns the point indices for each group.
 """
 function group_locations(locations,num_groups,radius)
-    #First compute clusters of sites
+    # First compute clusters of sites
     clusters = compute_clusters(locations,Float64(radius))
     # Sort them by length
     sort!(clusters, by=length)
@@ -84,23 +107,37 @@ function group_locations(locations,num_groups,radius)
 end
 
 """
-    plot_groups(df_loc)
+    plot_makie(df_loc, ng, dist, filt; kwargs...)
 """
-function plot_groups(df_loc, ng, dist, filt; kwargs...)
-    mcol = @isdefined(marker_color) ? marker_color : df_loc[!,:group]
-    colscale = @isdefined(colorscale) ? colorscale : "Viridis"
-    trace = scattergeo(;lat=df_loc[!,:lat], lon=df_loc[!,:lon], 
-        marker_color = mcol,
-        marker_size = 2,
-        colorscale = colscale,
-        )
-    geo = attr(scope="world")
-    # create fig
-    layout = Layout(; title="DeepExtremes $filt minicubes - $ng groups distant of at least $dist km",
-     showlegend=false, geo=geo)
-    plot(trace, layout)
+function plot_makie(df_loc, ng, dist, filt; kwargs...)
+    # @show marker_color
+    # mcol = @isdefined(marker_color) ? marker_color : df_loc[!,:group]
+    fig = Figure()
+    ga = GeoAxis(
+        fig[1, 1]; # any cell of the figure's layout
+        source="+proj=latlong +datum=WGS84",
+        dest="+proj=eqearth", # the CRS in which you want to plot
+        coastlines = true # plot coastlines from Natural Earth, as a reference.
+    )
+    scatter!(ga,  
+        df_loc[!,:lon], 
+        df_loc[!,:lat], 
+        # color = mcol, 
+        markersize = 2;
+        kwargs...)
+    fig
 end
 
+"""
+    filter_group(alldata, ng::Int, dist::Number, filt::String)
+    alldata: minicubes registry as CSV.Rows
+    ng: number of groups
+    dist: minimum distance between groups in km
+    filt: string occurring in the minicubes path, 
+        e.g. filt="/full/" will only return locations of full minicubes.
+    
+    output is a DataFrame with minicubes IDs, locations, and groups.
+"""
 function filter_group(alldata, ng::Int, dist::Number, filt::String)
     ind = [occursin(filt, d.path) for d in alldata]
 
@@ -124,26 +161,26 @@ function filter_group(alldata, ng::Int, dist::Number, filt::String)
     return df_loc
 end
 
-alldata = CSV.Rows("../registry_2023_11_03_11_20_21.csv")
+###############################
+### computation starts here ###
 
-ng = 10
-dist = 50
-filt = "full"
+# compute groups
 df_loc = filter_group(alldata, ng, dist, filt)
  
 # save groups
-CSV.write("../demc_$(filt)_$(ng)groups_$(dist)km.csv", df_loc)
+if !isdir("./results")
+    mkdir("./results")
+end
+CSV.write("./results/demc_$(filt)_$(ng)groups_$(dist)km.csv", df_loc)
 
 # plot groups
+cols = colorschemes[:inferno][range(0,(ng-1))/(ng-1)]
 
-cols = colorschemes[:viridis][range(0,(ng-1))/(ng-1)]
-
-p = plot_groups(df_loc, ng, dist, filt, colorscale = "Jet")
-mkdir("./fig")
-savefig(p, "./fig/map_demc_$(filt)_$(ng)groups_$dist.png")
+f = plot_makie(df_loc, ng, dist, filt, color=df_loc[!,:group], colormap=cols)
+save("./results/map_demc_$(filt)_all$(ng)groups_$dist.png", f)
 
 for g in 1:ng
-    p1 = plot_groups(filter(:group => x -> x==g, df_loc), ng, dist, filt, marker_color = g, colorscale = cols[g])
-    savefig(p1, "./fig/map_demc_$(filt)_$(g)of$(ng)groups_$dist.png")
+    f1 = plot_makie(filter(:group => x -> x==g, df_loc), ng, dist, filt, color = cols[g])
+    save("./results/map_demc_$(filt)_$(g)of$(ng)groups_$dist.png", f1)
 end
 
