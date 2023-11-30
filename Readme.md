@@ -14,6 +14,6 @@ You can download the registry with `get_registry.jl`. Please adjust the paths as
 
 # Authors
 
-Mélanie Weynants [@melwey] (https://www.github.com/melwey), Fabian Gans [@meggart] (https://www.github.com/meggart)
+Mélanie Weynants [@melwey](https://www.github.com/melwey), Fabian Gans [@meggart](https://www.github.com/meggart)
 
-Credits go to Jake Nelson and Basil Kraft [@bask0] (https://www.github.com/bask0) who did the original python implementation of the splitter this program is derived from. 
+Credits go to Jake Nelson and Basil Kraft [@bask0](https://www.github.com/bask0) who did the original python implementation of the splitter this program is derived from. 
