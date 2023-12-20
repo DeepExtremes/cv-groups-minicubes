@@ -8,9 +8,19 @@ Collection of scripts to split the minicubes into cross-validation folds
 julia cluster_cubes.jl
 ````
 
-When running the script, all dependencies will be installed automatically through `Pkg.instantiate`, just run the program with a recent Julia version. Currently the script assumes that the minicubes registry is stored in the same folder as the script and it will write the groups into a `./output/` folder. 
+When running the script, all dependencies will be installed automatically through `Pkg.instantiate`, just run the program with a recent Julia version. Currently the script assumes that the minicubes registry is stored in the same folder as the script and it will write the groups into a `./output/` folder. The number of groups is set to 10 and the distance between groups to 50 km.
 
 You can download the registry with `get_registry.jl`. Please adjust the paths as necessary. 
+
+### Output
+`cluster_cubes.jl` outputs a csv file with the minicubes identifiers, location (lon, lat) and their assigned group, as well as a map of the groups of minicubes locations. Example output with 10 groups and 50 km distance are available in [./output/](https://github.com/DeepExtremes/cv-groups-minicubes/tree/main/output).
+
+---
+<p float="center">
+  <img src="output/map_demc_full_all10groups_50.png" width="90%" /> 
+</p>
+
+---
 
 # Authors
 
