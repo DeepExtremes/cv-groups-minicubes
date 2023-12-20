@@ -109,22 +109,25 @@ end
 """
     plot_makie(df_loc, ng, dist, filt; kwargs...)
 """
-function plot_makie(df_loc, ng, dist, filt; kwargs...)
-    # @show marker_color
-    # mcol = @isdefined(marker_color) ? marker_color : df_loc[!,:group]
+function plot_makie(df_loc, ng, dist, filt; colbar = true, kwargs...)
     fig = Figure()
     ga = GeoAxis(
-        fig[1, 1]; # any cell of the figure's layout
-        source="+proj=latlong +datum=WGS84",
-        dest="+proj=eqearth", # the CRS in which you want to plot
+        fig[1, 1]; 
+        source="+proj=latlong +datum=WGS84", # src CRS
+        dest="+proj=eqearth", # destination CRS, in which you want to plot
         coastlines = true # plot coastlines from Natural Earth, as a reference.
     )
-    scatter!(ga,  
+    s = scatter!(ga,  
         df_loc[!,:lon], 
         df_loc[!,:lat], 
-        # color = mcol, 
         markersize = 2;
         kwargs...)
+
+    # draw horizontal Colorbar if colbar == true
+    if colbar
+        cbar = Colorbar(fig[2,1], s; vertical = false)
+        cbar.ticks = ((1+(ng-1)/ng/2):((ng-1)/ng):(ng), string.(1:ng))
+    end
     fig
 end
 
@@ -168,19 +171,19 @@ end
 df_loc = filter_group(alldata, ng, dist, filt)
  
 # save groups
-if !isdir("./results")
-    mkdir("./results")
+if !isdir("./output")
+    mkdir("./output")
 end
-CSV.write("./results/demc_$(filt)_$(ng)groups_$(dist)km.csv", df_loc)
+CSV.write("./output/demc_$(filt)_$(ng)groups_$(dist)km.csv", df_loc)
 
 # plot groups
-cols = colorschemes[:inferno][range(0,(ng-1))/(ng-1)]
+cmap = cgrad(:viridis, ng, categorical = true)
 
-f = plot_makie(df_loc, ng, dist, filt, color=df_loc[!,:group], colormap=cols)
-save("./results/map_demc_$(filt)_all$(ng)groups_$dist.png", f)
+f = plot_makie(df_loc, ng, dist, filt, color=df_loc[!,:group], colormap=cmap)
+save("./output/map_demc_$(filt)_all$(ng)groups_$dist.png", f; resolution=(1200,700))
 
 for g in 1:ng
-    f1 = plot_makie(filter(:group => x -> x==g, df_loc), ng, dist, filt, color = cols[g])
-    save("./results/map_demc_$(filt)_$(g)of$(ng)groups_$dist.png", f1)
+    f1 = plot_makie(filter(:group => x -> x==g, df_loc), ng, dist, filt; colbar = false, color = cmap[g])
+    save("./output/map_demc_$(filt)_$(g)of$(ng)groups_$dist.png", f1; resolution=(1200,650))
 end
 
