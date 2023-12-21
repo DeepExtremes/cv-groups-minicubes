@@ -7,7 +7,7 @@ authors:
 - family-names: "Gans"
   given-names: "Fabian"
   orcid: "https://orcid.org/0000-0001-9614-0435"
-title:"DeepExtremes/cv-groups-minicubes"
+title: "DeepExtremes/cv-groups-minicubes"
 version: v1.0.0
 doi: 10.5281/zenodo.10417312
 date-released: 2023-12-21
