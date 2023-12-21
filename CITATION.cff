@@ -3,12 +3,12 @@ message: "If you use this software, please cite it as below."
 authors:
 - family-names: Weynants 
   given-names: Mélanie
-  orcid: https://orcid.org/0000-0002-1447-0105
+  orcid: "https://orcid.org/0000-0002-1447-0105"
 - family-names: Gans 
   given-names: Fabian
-  orcid: https://orcid.org/0000-0001-9614-0435
+  orcid: "https://orcid.org/0000-0001-9614-0435"
 title:DeepExtremes/cv-groups-minicubes: v1.0.0
 version: v1.0.0
 doi: 10.5281/zenodo.10417312
 date-released: 2023-12-21
-url: https://github.com/DeepExtremes/cv-groups-minicubes
+url: "https://github.com/DeepExtremes/cv-groups-minicubes"
