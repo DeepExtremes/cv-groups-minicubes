@@ -1,5 +1,11 @@
 # Minicube-Splitter
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/DeepExtremes/cv-groups-minicubes/blob/main/LICENSE)
+[![DOI][zenodo-img]][zenodo-url]
+
+[zenodo-url]: https://doi.org/10.5281/10.5281/zenodo.10417312
+[zenodo-img]: https://zenodo.org/badge/DOI/10.5281/zenodo.10417312.svg
+
 Collection of scripts to split the minicubes into cross-validation folds
 
 ### Usage
